@@ -103,9 +103,9 @@ export default function SubscriptionPage() {
                     </div>
                   )}
 
-                  <h3 className="text-3xl font-bold mb-2">{plan.name}</h3>
+                  <h3 className="text-3xl font-bold mb-2">{plan.tier}</h3>
                   <div className="text-4xl font-bold mb-6">
-                    ${(plan.priceMonthly / 100).toFixed(0)}
+                    ${plan.price}
                     <span className="text-lg text-gray-400">/mo</span>
                   </div>
 

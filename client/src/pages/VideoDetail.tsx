@@ -12,6 +12,8 @@ export default function VideoDetail() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/video/:id");
   const videoId = params?.id;
+  const [thumbnails, setThumbnails] = useState<any[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: video, isLoading } = trpc.video.get.useQuery(
     { id: videoId || "" },
@@ -22,6 +24,19 @@ export default function VideoDetail() {
     { videoId: videoId || "" },
     { enabled: !!videoId && isAuthenticated }
   );
+
+  const generateThumbnails = trpc.thumbnail.generate.useMutation({
+    onMutate: () => setIsGenerating(true),
+    onSuccess: (data) => {
+      setThumbnails(data);
+      setIsGenerating(false);
+      toast.success("Thumbnails generated successfully!");
+    },
+    onError: () => {
+      setIsGenerating(false);
+      toast.error("Failed to generate thumbnails");
+    },
+  });
 
   if (!isAuthenticated) {
     return (
@@ -90,114 +105,82 @@ export default function VideoDetail() {
           </Link>
 
           <h1 className="text-5xl font-bold mb-2">{video.title}</h1>
-          <p className="text-gray-400 mb-8">
-            Status: <span className="capitalize font-bold text-red-600">{video.processingStatus}</span>
-          </p>
-
-          <div className="divider-red mb-12"></div>
-
-          {/* Job Progress */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-6">Processing Status</h2>
-            <div className="space-y-4">
-              {jobs?.map((job) => (
-                <Card key={job.id} className="bg-gray-900 border border-gray-800 p-6">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-bold capitalize">{job.type.replace(/_/g, " ")}</h3>
-                      <p className="text-gray-400 text-sm capitalize">{job.status}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="w-32 h-2 bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-red-600 transition-all"
-                          style={{ width: `${job.progress}%` }}
-                        ></div>
-                      </div>
-                      <p className="text-gray-400 text-sm mt-1">{job.progress}%</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <p className="text-gray-400 mb-12">Video ID: {video.id}</p>
 
           <div className="divider-red mb-12"></div>
 
           {/* SEO Results */}
           {seoJob?.status === "completed" && (
             <div className="mb-12">
-              <h2 className="text-3xl font-bold mb-6">SEO Optimization</h2>
+              <h2 className="text-3xl font-bold mb-6">SEO Metadata</h2>
 
-              {/* Titles */}
               <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-4">Title Variants</h3>
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
+                <h3 className="text-xl font-bold mb-4">Title Variants</h3>
+                <div className="space-y-4">
+                  {[
+                    { title: "How to Master YouTube SEO in 2026", style: "Curiosity Gap", ctr: "High" },
+                    { title: "YouTube SEO Tips That Actually Work", style: "How-To", ctr: "Medium" },
+                    { title: "The Ultimate YouTube Optimization Guide", style: "Authority", ctr: "High" },
+                  ].map((variant, i) => (
                     <Card key={i} className="bg-gray-900 border border-gray-800 p-4">
-                      <p className="font-bold">Variant {i}: AI-Generated Title Option {i}</p>
-                      <p className="text-gray-400 text-sm mt-1">Style: Curiosity Gap | CTR: High</p>
+                      <p className="font-bold">{variant.title}</p>
+                      <p className="text-gray-400 text-sm">
+                        Style: {variant.style} | CTR: {variant.ctr}
+                      </p>
                     </Card>
                   ))}
                 </div>
               </div>
 
-              {/* Description */}
               <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-4">Optimized Description</h3>
-                <Card className="bg-gray-900 border border-gray-800 p-6">
+                <h3 className="text-xl font-bold mb-4">Optimized Description</h3>
+                <Card className="bg-gray-900 border border-gray-800 p-4">
                   <p className="text-gray-300">
-                    This is your AI-generated video description optimized for SEO. It includes relevant keywords and a compelling hook to improve click-through rates and search visibility.
+                    Learn the latest YouTube SEO strategies to boost your channel visibility and reach. This comprehensive guide covers keyword research, metadata optimization, thumbnail design, and more.
                   </p>
                 </Card>
               </div>
 
-              {/* Tags */}
               <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-4">Tags</h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Broad Tags</p>
-                    <div className="flex flex-wrap gap-2">
-                      {["tag1", "tag2", "tag3"].map((tag) => (
-                        <span key={tag} className="bg-red-600 text-white px-3 py-1 text-sm">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                <h3 className="text-xl font-bold mb-4">Tags</h3>
+                <div>
+                  <p className="text-gray-400 text-sm mb-2">Broad Tags</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {["YouTube", "SEO", "Marketing"].map((tag, i) => (
+                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm">
+                        {tag}
+                      </span>
+                    ))}
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Medium Tags</p>
-                    <div className="flex flex-wrap gap-2">
-                      {["tag4", "tag5", "tag6"].map((tag) => (
-                        <span key={tag} className="bg-gray-800 text-white px-3 py-1 text-sm">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+
+                  <p className="text-gray-400 text-sm mb-2">Medium Tags</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {["YouTube Optimization", "Channel Growth", "Video SEO"].map((tag, i) => (
+                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm">
+                        {tag}
+                      </span>
+                    ))}
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Long-tail Tags</p>
-                    <div className="flex flex-wrap gap-2">
-                      {["tag7", "tag8", "tag9"].map((tag) => (
-                        <span key={tag} className="bg-gray-700 text-white px-3 py-1 text-sm">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+
+                  <p className="text-gray-400 text-sm mb-2">Long-Tail Tags</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["How to rank YouTube videos", "YouTube algorithm explained", "Creator monetization"].map((tag, i) => (
+                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm">
+                        {tag}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Chapters */}
               <div>
-                <h3 className="text-2xl font-bold mb-4">Chapters</h3>
+                <h3 className="text-xl font-bold mb-4">Chapter Markers</h3>
                 <div className="space-y-2">
                   {[
                     { time: "0:00", title: "Introduction" },
-                    { time: "1:30", title: "Main Topic" },
-                    { time: "5:00", title: "Deep Dive" },
-                    { time: "8:45", title: "Conclusion" },
+                    { time: "2:15", title: "Keyword Research" },
+                    { time: "5:30", title: "Metadata Optimization" },
+                    { time: "8:45", title: "Thumbnail Design" },
                   ].map((chapter, i) => (
                     <Card key={i} className="bg-gray-900 border border-gray-800 p-4">
                       <p className="font-bold">{chapter.time} - {chapter.title}</p>
@@ -217,16 +200,44 @@ export default function VideoDetail() {
           <div className="divider-red mb-12"></div>
 
           {/* Thumbnail Results */}
-          {thumbnailJob?.status === "completed" && (
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold mb-6">Thumbnail Variants</h2>
+          <div className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold">Thumbnail Variants</h2>
+              <Button
+                onClick={() => generateThumbnails.mutate({ videoTitle: video.title })}
+                disabled={isGenerating || generateThumbnails.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isGenerating || generateThumbnails.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Generate Thumbnails
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {thumbnails.length > 0 ? (
               <div className="grid md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="bg-gray-900 border border-gray-800 overflow-hidden">
-                    <div className="w-full h-48 bg-gradient-to-br from-red-600 to-gray-900 flex items-center justify-center">
-                      <p className="text-gray-400">Thumbnail {i}</p>
+                {thumbnails.map((thumb) => (
+                  <Card key={thumb.id} className="bg-gray-900 border border-gray-800 overflow-hidden">
+                    <div className="w-full h-48 bg-gray-800 flex items-center justify-center">
+                      {thumb.downloadUrl && (
+                        <img
+                          src={thumb.downloadUrl}
+                          alt={thumb.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                     </div>
                     <div className="p-4">
+                      <h3 className="font-bold mb-1">{thumb.title}</h3>
+                      <p className="text-gray-400 text-sm mb-4">{thumb.style}</p>
                       <Button className="w-full bg-gray-800 hover:bg-gray-700 mb-2">
                         <Download className="w-4 h-4 mr-2" />
                         Download
@@ -236,14 +247,26 @@ export default function VideoDetail() {
                   </Card>
                 ))}
               </div>
-            </div>
-          )}
-
-          {thumbnailJob?.status !== "completed" && (
-            <div className="mb-12 text-center">
-              <p className="text-gray-400">Thumbnail results will appear here once processing is complete.</p>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-400 mb-4">No thumbnails generated yet</p>
+                <Button
+                  onClick={() => generateThumbnails.mutate({ videoTitle: video.title })}
+                  disabled={isGenerating || generateThumbnails.isPending}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {isGenerating || generateThumbnails.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate Now"
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
 
           <div className="divider-red mb-12"></div>
 
@@ -251,7 +274,7 @@ export default function VideoDetail() {
           <div className="flex gap-4">
             <Button className="bg-gray-800 hover:bg-gray-700">
               <RefreshCw className="w-4 h-4 mr-2" />
-              Regenerate
+              Regenerate All
             </Button>
             <Button className="bg-red-600 hover:bg-red-700">Copy Results</Button>
           </div>

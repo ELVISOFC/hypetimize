@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { nanoid } from "nanoid";
+import { generateMockThumbnails, svgToDataUrl, simulateAIProcessing } from "./services/thumbnailGenerator";
 
 export const appRouter = router({
   system: systemRouter,
@@ -46,48 +47,6 @@ export const appRouter = router({
       .input(z.object({ slug: z.string() }))
       .query(async ({ input }) => {
         return await db.getWorkspaceBySlug(input.slug);
-      }),
-  }),
-
-  /**
-   * Subscription procedures
-   */
-  subscription: router({
-    getCurrent: protectedProcedure
-      .input(z.object({ workspaceId: z.string() }))
-      .query(async ({ input }) => {
-        return await db.getSubscriptionByWorkspaceId(input.workspaceId);
-      }),
-
-    listPlans: publicProcedure
-      .query(async () => {
-        // Return hardcoded plans for now
-        return [
-          {
-            id: "free",
-            tier: "Free",
-            name: "Free",
-            priceMonthly: 0,
-            videoLimitPerMonth: 2,
-            features: ["2 videos/month", "Basic SEO metadata", "Standard thumbnails"],
-          },
-          {
-            id: "pro",
-            tier: "Pro",
-            name: "Pro",
-            priceMonthly: 2999,
-            videoLimitPerMonth: 20,
-            features: ["20 videos/month", "Advanced SEO optimization", "Premium thumbnails", "Highlight clips"],
-          },
-          {
-            id: "studio",
-            tier: "Studio",
-            name: "Studio",
-            priceMonthly: 9999,
-            videoLimitPerMonth: -1,
-            features: ["Unlimited videos", "Full AI suite", "Priority processing", "Team collaboration"],
-          },
-        ];
       }),
   }),
 
@@ -186,6 +145,49 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         return await db.createYouTubeAccount(input.workspaceId, input.channelId, input.channelName);
+      }),
+  }),
+
+  /**
+   * Subscription procedures
+   */
+  subscription: router({
+    getCurrent: protectedProcedure
+      .input(z.object({ workspaceId: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getSubscriptionByWorkspaceId(input.workspaceId);
+      }),
+
+    listPlans: protectedProcedure
+      .query(async () => {
+        return [
+          { id: "free", tier: "Free", price: 0, features: ["1 video/month", "Basic SEO", "3 thumbnails"] },
+          { id: "pro", tier: "Pro", price: 29, features: ["10 videos/month", "Advanced SEO", "Unlimited thumbnails"] },
+          { id: "studio", tier: "Studio", price: 99, features: ["Unlimited videos", "Priority support", "Team collaboration"] },
+        ];
+      }),
+  }),
+
+  /**
+   * Thumbnail generation procedures
+   */
+  thumbnail: router({
+    generate: protectedProcedure
+      .input(z.object({ videoTitle: z.string() }))
+      .mutation(async ({ input }) => {
+        // Simulate AI processing
+        await simulateAIProcessing(1500);
+        
+        // Generate mock thumbnails
+        const variants = generateMockThumbnails(input.videoTitle);
+        
+        // Convert SVG to data URLs for display
+        return variants.map((v) => ({
+          id: v.id,
+          title: v.title,
+          style: v.style,
+          downloadUrl: svgToDataUrl(v.svgContent),
+        }));
       }),
   }),
 });

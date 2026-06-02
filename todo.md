@@ -50,6 +50,8 @@
 - [x] Build chapter markers display
 - [x] Build thumbnail variants gallery
 - [x] Add thumbnail download functionality
+- [x] Integrate mock AI thumbnail generation service
+- [x] Add vitest tests for thumbnail generation
 
 ## Phase 8: Subscription & Settings
 - [x] Build subscription page with current plan display
