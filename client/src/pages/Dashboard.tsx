@@ -131,17 +131,17 @@ export default function Dashboard() {
           {/* Stats */}
           <div className="grid md:grid-cols-3 gap-8 my-12">
             <Card className="bg-gray-900 border border-gray-800 p-8">
-              <p className="text-gray-400 text-sm mb-2">Current Plan</p>
-              <h3 className="text-3xl font-bold">{subscription?.tier || "Free"}</h3>
-            </Card>
-
-            <Card className="bg-gray-900 border border-gray-800 p-8">
               <p className="text-gray-400 text-sm mb-2">Thumbnails Generated</p>
               <h3 className="text-3xl font-bold">0</h3>
             </Card>
 
             <Card className="bg-gray-900 border border-gray-800 p-8">
               <p className="text-gray-400 text-sm mb-2">SEO Runs</p>
+              <h3 className="text-3xl font-bold">0</h3>
+            </Card>
+
+            <Card className="bg-gray-900 border border-gray-800 p-8">
+              <p className="text-gray-400 text-sm mb-2">Clips Created</p>
               <h3 className="text-3xl font-bold">0</h3>
             </Card>
           </div>

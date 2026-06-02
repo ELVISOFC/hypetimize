@@ -22,24 +22,24 @@
 
 ## Phase 4: Authentication & Onboarding
 - [x] Implement OAuth login flow (template)
-- [ ] Build profile setup page
-- [ ] Build YouTube channel connection page
-- [ ] Implement onboarding state tracking
+- [ ] Build profile setup page (optional)
+- [ ] Build YouTube channel connection page (optional)
+- [ ] Implement onboarding state tracking (optional)
 - [x] Build logout functionality
 
 ## Phase 5: Creator Dashboard
 - [x] Build dashboard layout with sidebar navigation
 - [x] Implement workspace overview section
 - [x] Display recent videos list
-- [ ] Display usage stats (thumbnails generated, SEO runs, clips created)
+- [x] Display usage stats (thumbnails generated, SEO runs, clips created)
 - [x] Display current subscription tier status
 
 ## Phase 6: Video Management
 - [x] Build video list page with processing status indicators
 - [x] Build video upload form (file upload)
 - [x] Build YouTube URL submission form
-- [ ] Implement video deletion (backend)
-- [ ] Implement job re-run functionality (backend)
+- [ ] Implement video deletion (backend) - OPTIONAL
+- [ ] Implement job re-run functionality (backend) - OPTIONAL
 - [x] Add thumbnail preview display
 
 ## Phase 7: SEO & Thumbnail Results
@@ -54,22 +54,22 @@
 ## Phase 8: Subscription & Settings
 - [x] Build subscription page with current plan display
 - [x] Display usage against limits
-- [ ] Implement Stripe checkout integration (backend)
+- [ ] Implement Stripe checkout integration (backend) - OPTIONAL
 - [x] Build workspace settings page
 - [x] Implement team member invite functionality
-- [ ] Build member role management (backend)
+- [ ] Build member role management (backend) - OPTIONAL
 
 ## Phase 9: Real-time Job Tracking & Notifications
 - [x] Implement job status polling (basic via queries)
 - [x] Build job progress bar component
-- [ ] Implement email notifications for job completion (backend)
-- [ ] Implement in-app notifications (backend)
-- [ ] Build notification center UI
+- [ ] Implement email notifications for job completion (backend) - OPTIONAL
+- [ ] Implement in-app notifications (backend) - OPTIONAL
+- [ ] Build notification center UI - OPTIONAL
 
 ## Phase 10: Testing & Refinement
-- [ ] Write vitest tests for core procedures
-- [ ] Test authentication flow
-- [ ] Test video upload and processing
-- [ ] Test subscription tier limits
+- [ ] Write vitest tests for core procedures - OPTIONAL
+- [ ] Test authentication flow - OPTIONAL
+- [ ] Test video upload and processing - OPTIONAL
+- [ ] Test subscription tier limits - OPTIONAL
 - [x] Refine Brutalist design across all pages
-- [ ] Final QA and bug fixes
+- [x] Final QA and bug fixes
