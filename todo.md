@@ -22,10 +22,12 @@
 
 ## Phase 4: Authentication & Onboarding
 - [x] Implement OAuth login flow (template)
+- [x] Build onboarding page with workspace setup
+- [x] Implement OAuth callback redirect to onboarding
+- [x] Auto-redirect to dashboard if workspace exists
+- [x] Build logout functionality
 - [ ] Build profile setup page (optional)
 - [ ] Build YouTube channel connection page (optional)
-- [ ] Implement onboarding state tracking (optional)
-- [x] Build logout functionality
 
 ## Phase 5: Creator Dashboard
 - [x] Build dashboard layout with sidebar navigation

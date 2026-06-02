@@ -56,25 +56,12 @@ export default function Dashboard() {
   const currentWorkspace = workspaces?.[0];
 
   if (!currentWorkspace) {
+    // Redirect to onboarding if no workspace exists
+    setLocation("/onboarding");
     return (
-      <div className="min-h-screen bg-black text-white">
-        <nav className="border-b border-gray-800 px-6 py-4">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div className="text-3xl font-bold tracking-tighter">HYPETIMIZE</div>
-            <Button onClick={() => logout()} className="bg-gray-800 hover:bg-gray-700">
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </nav>
-
-        <div className="max-w-7xl mx-auto py-12 px-6">
-          <h1 className="text-4xl font-bold mb-8">Welcome, {user?.name}!</h1>
-          <p className="text-gray-400 mb-8">Create your first workspace to get started.</p>
-          <Button className="bg-red-600 hover:bg-red-700 text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Workspace
-          </Button>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Setting up your workspace...</h1>
         </div>
       </div>
     );

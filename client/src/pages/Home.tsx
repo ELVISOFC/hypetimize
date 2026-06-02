@@ -37,11 +37,19 @@ export default function Home() {
           <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto">
             Generate stunning thumbnails, optimize SEO metadata, and extract highlight clips—all powered by AI. Built for creators who demand excellence.
           </p>
-          <a href={getLoginUrl()}>
-            <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-6 text-lg">
-              Get Started Free
-            </Button>
-          </a>
+          {isAuthenticated ? (
+            <Link href="/dashboard">
+              <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-6 text-lg">
+                Go to Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <a href={getLoginUrl()}>
+              <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-6 text-lg">
+                Get Started Free
+              </Button>
+            </a>
+          )}
         </div>
       </section>
 

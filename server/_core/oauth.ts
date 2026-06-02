@@ -44,7 +44,14 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, "/");
+      // Check if user has any workspaces
+      // Get user from database to get their ID
+      const user = await db.getUserByOpenId(userInfo.openId);
+      const userWorkspaces = user ? await db.getUserWorkspaces(user.id) : [];
+      
+      // If no workspaces, redirect to onboarding; otherwise go to dashboard
+      const redirectPath = userWorkspaces.length > 0 ? "/dashboard" : "/onboarding";
+      res.redirect(302, redirectPath);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });
