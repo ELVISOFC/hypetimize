@@ -11,6 +11,7 @@
 - [x] Implement video router (upload, list, get, delete, regenerate)
 - [x] Implement job router (list, get status, cancel)
 - [x] Implement subscription router (get current, list plans, upgrade)
+- [x] Add workspace switcher dropdown to dashboard
 - [ ] Add Stripe integration for billing
 
 ## Phase 3: Public Landing Page
@@ -35,6 +36,7 @@
 - [x] Display recent videos list
 - [x] Display usage stats (thumbnails generated, SEO runs, clips created)
 - [x] Display current subscription tier status
+- [x] Add workspace switcher to sidebar
 
 ## Phase 6: Video Management
 - [x] Build video list page with processing status indicators

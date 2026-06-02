@@ -1,10 +1,10 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link, useLocation } from "wouter";
 import { Loader2, LogOut, Plus, Settings, Video } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Dashboard() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -71,7 +71,26 @@ export default function Dashboard() {
     <div className="min-h-screen bg-black text-white flex">
       {/* Sidebar */}
       <div className="w-64 border-r border-gray-800 p-6">
-        <div className="text-2xl font-bold mb-12">HYPETIMIZE</div>
+        <div className="text-2xl font-bold mb-8">HYPETIMIZE</div>
+        
+        {/* Workspace Switcher */}
+        {workspaces && workspaces.length > 0 && (
+          <div className="mb-8 pb-6 border-b border-gray-800">
+            <p className="text-xs text-gray-500 mb-2">WORKSPACE</p>
+            <select
+              value={workspaceId || ""}
+              onChange={(e) => setWorkspaceId(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded text-sm"
+            >
+              {workspaces.map((ws) => (
+                <option key={ws.id} value={ws.id}>
+                  {ws.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
         <nav className="space-y-4">
           <Link href="/dashboard">
             <Button className="w-full justify-start bg-red-600 hover:bg-red-700">
