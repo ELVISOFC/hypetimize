@@ -25,6 +25,8 @@ export default function VideoDetail() {
     { enabled: !!videoId && isAuthenticated }
   );
 
+  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
+
   const generateThumbnails = trpc.thumbnail.generate.useMutation({
     onMutate: () => setIsGenerating(true),
     onSuccess: (data) => {
@@ -37,6 +39,18 @@ export default function VideoDetail() {
       toast.error("Failed to generate thumbnails");
     },
   });
+
+  const handleSelectThumbnail = (thumbnailId: string) => {
+    setSelectedThumbnail(thumbnailId);
+    toast.success("Thumbnail selected!");
+  };
+
+  const handleDownloadThumbnail = (downloadUrl: string, title: string) => {
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `${title}.svg`;
+    link.click();
+  };
 
   if (!isAuthenticated) {
     return (
@@ -238,11 +252,23 @@ export default function VideoDetail() {
                     <div className="p-4">
                       <h3 className="font-bold mb-1">{thumb.title}</h3>
                       <p className="text-gray-400 text-sm mb-4">{thumb.style}</p>
-                      <Button className="w-full bg-gray-800 hover:bg-gray-700 mb-2">
+                      <Button
+                        onClick={() => handleDownloadThumbnail(thumb.downloadUrl, thumb.title)}
+                        className="w-full bg-gray-800 hover:bg-gray-700 mb-2"
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Download
                       </Button>
-                      <Button className="w-full bg-red-600 hover:bg-red-700">Select</Button>
+                      <Button
+                        onClick={() => handleSelectThumbnail(thumb.id)}
+                        className={`w-full ${
+                          selectedThumbnail === thumb.id
+                            ? "bg-red-600 hover:bg-red-700"
+                            : "bg-gray-800 hover:bg-gray-700"
+                        }`}
+                      >
+                        {selectedThumbnail === thumb.id ? "✓ Selected" : "Select"}
+                      </Button>
                     </div>
                   </Card>
                 ))}

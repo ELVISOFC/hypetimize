@@ -42,6 +42,8 @@
 - [x] Build video list page with processing status indicators
 - [x] Build video upload form (file upload)
 - [x] Build YouTube URL submission form
+- [x] Add thumbnail selection and download functionality
+- [x] Wire thumbnail generation to job system
 - [ ] Implement video deletion (backend) - OPTIONAL
 - [ ] Implement job re-run functionality (backend) - OPTIONAL
 - [x] Add thumbnail preview display
@@ -56,6 +58,8 @@
 - [x] Add thumbnail download functionality
 - [x] Integrate mock AI thumbnail generation service
 - [x] Add vitest tests for thumbnail generation
+- [x] Add thumbnail selection state tracking
+- [x] Wire download and select buttons
 
 ## Phase 8: Subscription & Settings
 - [x] Build subscription page with current plan display
