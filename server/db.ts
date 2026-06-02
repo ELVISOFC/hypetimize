@@ -1,11 +1,10 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, workspaces, subscriptions, videos, jobs, usageRecords, notifications, workspaceMembers, youtubeAccounts } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -85,8 +84,162 @@ export async function getUserByOpenId(openId: string) {
   }
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Workspace queries
+ */
+export async function createWorkspace(ownerId: number, name: string, slug: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const id = Math.random().toString(36).substring(2, 15);
+  await db.insert(workspaces).values({ id, ownerId, name, slug });
+  return { id, ownerId, name, slug };
+}
+
+export async function getWorkspaceBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(workspaces).where(eq(workspaces.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getWorkspaceById(id: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(workspaces).where(eq(workspaces.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserWorkspaces(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(workspaces).where(eq(workspaces.ownerId, userId));
+}
+
+/**
+ * Subscription queries
+ */
+export async function getSubscriptionByWorkspaceId(workspaceId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(subscriptions).where(eq(subscriptions.workspaceId, workspaceId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createSubscription(workspaceId: string, tier: "Free" | "Pro" | "Studio" = "Free") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const id = Math.random().toString(36).substring(2, 15);
+  await db.insert(subscriptions).values({ id, workspaceId, tier });
+  return { id, workspaceId, tier };
+}
+
+/**
+ * Video queries
+ */
+export async function createVideo(workspaceId: string, title: string, sourceType: "upload" | "youtube_url", youtubeUrl?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const id = Math.random().toString(36).substring(2, 15);
+  await db.insert(videos).values({ id, workspaceId, title, sourceType, youtubeUrl });
+  return { id, workspaceId, title, sourceType, youtubeUrl };
+}
+
+export async function getVideosByWorkspace(workspaceId: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(videos).where(eq(videos.workspaceId, workspaceId)).limit(limit);
+}
+
+export async function getVideoById(id: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(videos).where(eq(videos.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Job queries
+ */
+export async function createJob(videoId: string, type: "thumbnail_generation" | "highlight_clip" | "seo_metadata" | "video_transcode" | "caption_generation", status: "pending" | "queued" | "processing" | "completed" | "failed" | "canceled" = "pending") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const id = Math.random().toString(36).substring(2, 15);
+  await db.insert(jobs).values({ id, videoId, type, status });
+  return { id, videoId, type, status };
+}
+
+export async function getJobsByVideo(videoId: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(jobs).where(eq(jobs.videoId, videoId));
+}
+
+export async function getJobById(id: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Usage queries
+ */
+export async function getUsageRecord(workspaceId: string, periodStart: Date, periodEnd: Date) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(usageRecords).where(
+    and(eq(usageRecords.workspaceId, workspaceId), eq(usageRecords.periodStart, periodStart), eq(usageRecords.periodEnd, periodEnd))
+  ).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Notification queries
+ */
+export async function createNotification(workspaceId: string, type: "job_completed" | "job_failed" | "subscription_updated" | "team_invited", title: string, content?: string, jobId?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const id = Math.random().toString(36).substring(2, 15);
+  await db.insert(notifications).values({ id, workspaceId, type, title, content, jobId });
+  return { id, workspaceId, type, title, content, jobId };
+}
+
+export async function getNotificationsByWorkspace(workspaceId: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(notifications).where(eq(notifications.workspaceId, workspaceId)).limit(limit);
+}
+
+/**
+ * YouTube account queries
+ */
+export async function getYouTubeAccountByWorkspace(workspaceId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(youtubeAccounts).where(eq(youtubeAccounts.workspaceId, workspaceId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createYouTubeAccount(workspaceId: string, channelId: string, channelName: string, accessToken?: string, refreshToken?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const id = Math.random().toString(36).substring(2, 15);
+  await db.insert(youtubeAccounts).values({ id, workspaceId, channelId, channelName, accessToken, refreshToken });
+  return { id, workspaceId, channelId, channelName, accessToken, refreshToken };
+}

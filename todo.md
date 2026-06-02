@@ -1,0 +1,75 @@
+# HYPETIMIZE - Project TODO
+
+## Phase 1: Database & Backend Architecture
+- [x] Design and implement Drizzle schema for workspaces, videos, jobs, assets, subscriptions
+- [x] Create database migration SQL
+- [x] Implement core query helpers in server/db.ts
+
+## Phase 2: Core Backend Procedures
+- [x] Implement auth router (login, logout, profile)
+- [x] Implement workspace router (create, list, get, delete, regenerate)
+- [x] Implement video router (upload, list, get, delete, regenerate)
+- [x] Implement job router (list, get status, cancel)
+- [x] Implement subscription router (get current, list plans, upgrade)
+- [ ] Add Stripe integration for billing
+
+## Phase 3: Public Landing Page
+- [x] Design and build hero section with Brutalist aesthetic
+- [x] Build feature highlights section (thumbnails, SEO, clips)
+- [x] Build pricing tiers section (Free, Pro, Studio)
+- [x] Build call-to-action and sign-up flow
+- [x] Implement red divider lines throughout
+
+## Phase 4: Authentication & Onboarding
+- [x] Implement OAuth login flow (template)
+- [ ] Build profile setup page
+- [ ] Build YouTube channel connection page
+- [ ] Implement onboarding state tracking
+- [x] Build logout functionality
+
+## Phase 5: Creator Dashboard
+- [x] Build dashboard layout with sidebar navigation
+- [x] Implement workspace overview section
+- [x] Display recent videos list
+- [ ] Display usage stats (thumbnails generated, SEO runs, clips created)
+- [x] Display current subscription tier status
+
+## Phase 6: Video Management
+- [x] Build video list page with processing status indicators
+- [x] Build video upload form (file upload)
+- [x] Build YouTube URL submission form
+- [ ] Implement video deletion (backend)
+- [ ] Implement job re-run functionality (backend)
+- [x] Add thumbnail preview display
+
+## Phase 7: SEO & Thumbnail Results
+- [x] Build SEO results view with title variants
+- [x] Display CTR estimates and title styles
+- [x] Build optimized description display
+- [x] Build tags view (broad, medium, long-tail)
+- [x] Build chapter markers display
+- [x] Build thumbnail variants gallery
+- [x] Add thumbnail download functionality
+
+## Phase 8: Subscription & Settings
+- [x] Build subscription page with current plan display
+- [x] Display usage against limits
+- [ ] Implement Stripe checkout integration (backend)
+- [x] Build workspace settings page
+- [x] Implement team member invite functionality
+- [ ] Build member role management (backend)
+
+## Phase 9: Real-time Job Tracking & Notifications
+- [x] Implement job status polling (basic via queries)
+- [x] Build job progress bar component
+- [ ] Implement email notifications for job completion (backend)
+- [ ] Implement in-app notifications (backend)
+- [ ] Build notification center UI
+
+## Phase 10: Testing & Refinement
+- [ ] Write vitest tests for core procedures
+- [ ] Test authentication flow
+- [ ] Test video upload and processing
+- [ ] Test subscription tier limits
+- [x] Refine Brutalist design across all pages
+- [ ] Final QA and bug fixes
