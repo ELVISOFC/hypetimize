@@ -105,3 +105,10 @@
 - [x] Add descriptive subtitle for trust section
 - [x] Maintain Brutalist design consistency
 - [x] Add red dividers before and after section
+
+## Phase 14: Profile Setup & YouTube Connection
+- [x] Create ProfileSetup page with form validation
+- [x] Create YouTubeConnect page with channel ID input
+- [x] Wire both pages into onboarding flow
+- [x] Add progress indicators and success states
+- [x] Add skip/continue buttons for flexible onboarding

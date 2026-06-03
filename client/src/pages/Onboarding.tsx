@@ -17,7 +17,7 @@ export default function OnboardingPage() {
   const createWorkspace = trpc.workspace.create.useMutation({
     onSuccess: (workspace) => {
       toast.success("Workspace created!");
-      setLocation("/dashboard");
+      setLocation("/profile-setup");
     },
     onError: (error) => {
       toast.error("Failed to create workspace");
@@ -62,6 +62,10 @@ export default function OnboardingPage() {
     } else {
       handleCreateWorkspace(new Event("submit") as any);
     }
+  };
+
+  const handleYouTubeSkip = () => {
+    setLocation("/profile-setup");
   };
 
   return (
@@ -167,18 +171,11 @@ export default function OnboardingPage() {
                 </Button>
                 <Button
                   type="button"
-                  onClick={handleSkip}
+                  onClick={handleYouTubeSkip}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                   disabled={isLoading}
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Setting up...
-                    </>
-                  ) : (
-                    "Get Started"
-                  )}
+                  Continue to Profile
                 </Button>
               </div>
             </div>

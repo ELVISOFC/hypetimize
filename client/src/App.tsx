@@ -8,6 +8,8 @@ import VideoDetail from "@/pages/VideoDetail";
 import Subscription from "@/pages/Subscription";
 import Settings from "@/pages/Settings";
 import Onboarding from "@/pages/Onboarding";
+import ProfileSetup from "@/pages/ProfileSetup";
+import YouTubeConnect from "@/pages/YouTubeConnect";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -17,6 +19,8 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/onboarding"} component={Onboarding} />
+      <Route path={"/profile-setup"} component={ProfileSetup} />
+      <Route path={"/youtube-connect"} component={YouTubeConnect} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/upload"} component={Upload} />
       <Route path={"/video/:id"} component={VideoDetail} />
