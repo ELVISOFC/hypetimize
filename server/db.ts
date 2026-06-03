@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, workspaces, subscriptions, videos, jobs, usageRecords, notifications, workspaceMembers, youtubeAccounts } from "../drizzle/schema";
+import { InsertUser, users, workspaces, subscriptions, videos, jobs, usageRecords, notifications, workspaceMembers, youtubeAccounts, thumbnailFeedback, InsertThumbnailFeedback } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -242,4 +242,38 @@ export async function createYouTubeAccount(workspaceId: string, channelId: strin
   const id = Math.random().toString(36).substring(2, 15);
   await db.insert(youtubeAccounts).values({ id, workspaceId, channelId, channelName, accessToken, refreshToken });
   return { id, workspaceId, channelId, channelName, accessToken, refreshToken };
+}
+
+/**
+ * Thumbnail feedback queries
+ */
+export async function createThumbnailFeedback(assetId: string, userId: number, rating: number, comment?: string, helpful?: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const id = Math.random().toString(36).substring(2, 15);
+  const feedback: InsertThumbnailFeedback = { id, assetId, userId, rating, comment, helpful };
+  await db.insert(thumbnailFeedback).values(feedback);
+  return { id, assetId, userId, rating, comment, helpful };
+}
+
+export async function getFeedbackByAsset(assetId: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(thumbnailFeedback).where(eq(thumbnailFeedback.assetId, assetId));
+}
+
+export async function getFeedbackByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(thumbnailFeedback).where(eq(thumbnailFeedback.userId, userId));
+}
+
+export async function getAverageRatingByAsset(assetId: string) {
+  const db = await getDb();
+  if (!db) return 0;
+  const feedback = await db.select().from(thumbnailFeedback).where(eq(thumbnailFeedback.assetId, assetId));
+  if (feedback.length === 0) return 0;
+  const sum = feedback.reduce((acc, f) => acc + f.rating, 0);
+  return Math.round((sum / feedback.length) * 10) / 10;
 }

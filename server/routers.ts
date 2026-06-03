@@ -3,184 +3,147 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import * as db from "./db";
-import { nanoid } from "nanoid";
-import { generateMockThumbnails, svgToDataUrl, simulateAIProcessing } from "./services/thumbnailGenerator";
+import { generateMockThumbnails, svgToDataUrl } from "./services/thumbnailGenerator";
+import { getDb, createThumbnailFeedback, getFeedbackByAsset, getAverageRatingByAsset } from "./db";
 
 export const appRouter = router({
   system: systemRouter,
-  
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return { success: true } as const;
+      return {
+        success: true,
+      } as const;
     }),
   }),
 
-  /**
-   * Workspace procedures
-   */
   workspace: router({
-    create: protectedProcedure
-      .input(z.object({ name: z.string().min(1).max(255), slug: z.string().min(1).max(255) }))
-      .mutation(async ({ ctx, input }) => {
-        const workspace = await db.createWorkspace(ctx.user.id, input.name, input.slug);
-        // Create default Free subscription
-        await db.createSubscription(workspace.id, "Free");
+    list: protectedProcedure.query(async ({ ctx }) => {
+      if (!db) return [];
+      return await db.getWorkspacesByUserId(ctx.user.id);
+    }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ ctx, input }) => {
+        if (!db) return null;
+        const workspace = await db.getWorkspace(input.id);
+        if (workspace?.ownerId !== ctx.user.id) return null;
         return workspace;
       }),
 
-    list: protectedProcedure
-      .query(async ({ ctx }) => {
-        return await db.getUserWorkspaces(ctx.user.id);
-      }),
-
-    get: protectedProcedure
-      .input(z.object({ id: z.string() }))
-      .query(async ({ input }) => {
-        return await db.getWorkspaceById(input.id);
-      }),
-
-    getBySlug: publicProcedure
-      .input(z.object({ slug: z.string() }))
-      .query(async ({ input }) => {
-        return await db.getWorkspaceBySlug(input.slug);
-      }),
-  }),
-
-  /**
-   * Video procedures
-   */
-  video: router({
     create: protectedProcedure
-      .input(z.object({
-        workspaceId: z.string(),
-        title: z.string().min(1).max(255),
-        sourceType: z.enum(["upload", "youtube_url"]),
-        youtubeUrl: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const video = await db.createVideo(input.workspaceId, input.title, input.sourceType, input.youtubeUrl);
-        // Create processing jobs
-        await db.createJob(video.id, "seo_metadata");
-        await db.createJob(video.id, "thumbnail_generation");
-        await db.createJob(video.id, "highlight_clip");
-        return video;
-      }),
-
-    list: protectedProcedure
-      .input(z.object({ workspaceId: z.string(), limit: z.number().default(20) }))
-      .query(async ({ input }) => {
-        return await db.getVideosByWorkspace(input.workspaceId, input.limit);
-      }),
-
-    get: protectedProcedure
-      .input(z.object({ id: z.string() }))
-      .query(async ({ input }) => {
-        const video = await db.getVideoById(input.id);
-        if (!video) throw new Error("Video not found");
-        const jobs = await db.getJobsByVideo(input.id);
-        return { ...video, jobs };
+      .input(z.object({ name: z.string(), slug: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        return await db.createWorkspace(input.name, input.slug, ctx.user.id);
       }),
 
     delete: protectedProcedure
       .input(z.object({ id: z.string() }))
-      .mutation(async ({ input }) => {
-        // In production, also delete from S3
-        return { success: true, deletedId: input.id };
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        const workspace = await db.getWorkspace(input.id);
+        if (workspace?.ownerId !== ctx.user.id) throw new Error("Unauthorized");
+        return await db.deleteWorkspace(input.id);
       }),
   }),
 
-  /**
-   * Job procedures
-   */
+  video: router({
+    list: protectedProcedure
+      .input(z.object({ workspaceId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        if (!db) return [];
+        return await db.getVideosByWorkspace(input.workspaceId);
+      }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ ctx, input }) => {
+        if (!db) return null;
+        return await db.getVideo(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({ workspaceId: z.string(), title: z.string(), youtubeUrl: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        return await db.createVideo(input.workspaceId, input.title, input.youtubeUrl);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        return await db.deleteVideo(input.id);
+      }),
+  }),
+
   job: router({
     list: protectedProcedure
       .input(z.object({ videoId: z.string() }))
-      .query(async ({ input }) => {
+      .query(async ({ ctx, input }) => {
+        if (!db) return [];
         return await db.getJobsByVideo(input.videoId);
       }),
 
     get: protectedProcedure
       .input(z.object({ id: z.string() }))
-      .query(async ({ input }) => {
-        return await db.getJobById(input.id);
+      .query(async ({ ctx, input }) => {
+        if (!db) return null;
+        return await db.getJob(input.id);
       }),
 
     cancel: protectedProcedure
       .input(z.object({ id: z.string() }))
-      .mutation(async ({ input }) => {
-        return { success: true, jobId: input.id };
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        return await db.cancelJob(input.id);
       }),
   }),
 
-  /**
-   * Notification procedures
-   */
-  notification: router({
-    list: protectedProcedure
-      .input(z.object({ workspaceId: z.string(), limit: z.number().default(20) }))
-      .query(async ({ input }) => {
-        return await db.getNotificationsByWorkspace(input.workspaceId, input.limit);
-      }),
-  }),
-
-  /**
-   * YouTube account procedures
-   */
-  youtubeAccount: router({
-    get: protectedProcedure
-      .input(z.object({ workspaceId: z.string() }))
-      .query(async ({ input }) => {
-        return await db.getYouTubeAccountByWorkspace(input.workspaceId);
-      }),
-
-    connect: protectedProcedure
-      .input(z.object({
-        workspaceId: z.string(),
-        channelId: z.string(),
-        channelName: z.string(),
-      }))
-      .mutation(async ({ input }) => {
-        return await db.createYouTubeAccount(input.workspaceId, input.channelId, input.channelName);
-      }),
-  }),
-
-  /**
-   * Subscription procedures
-   */
   subscription: router({
     getCurrent: protectedProcedure
       .input(z.object({ workspaceId: z.string() }))
-      .query(async ({ input }) => {
-        return await db.getSubscriptionByWorkspaceId(input.workspaceId);
+      .query(async ({ ctx, input }) => {
+        if (!db) return null;
+        return await db.getSubscription(input.workspaceId);
       }),
 
-    listPlans: protectedProcedure
-      .query(async () => {
-        return [
-          { id: "free", tier: "Free", price: 0, features: ["1 video/month", "Basic SEO", "3 thumbnails"] },
-          { id: "pro", tier: "Pro", price: 29, features: ["10 videos/month", "Advanced SEO", "Unlimited thumbnails"] },
-          { id: "studio", tier: "Studio", price: 99, features: ["Unlimited videos", "Priority support", "Team collaboration"] },
-        ];
+    listPlans: publicProcedure.query(async () => {
+      return [
+        { id: "free", name: "Free", price: 0, limits: { thumbnails: 10, seoRuns: 5, clipsPerMonth: 3 } },
+        { id: "pro", name: "Pro", price: 29, limits: { thumbnails: 100, seoRuns: 50, clipsPerMonth: 20 } },
+        { id: "studio", name: "Studio", price: 99, limits: { thumbnails: 500, seoRuns: 200, clipsPerMonth: 100 } },
+      ];
+    }),
+
+    upgrade: protectedProcedure
+      .input(z.object({ workspaceId: z.string(), planId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        return await db.updateSubscription(input.workspaceId, input.planId);
       }),
   }),
 
-  /**
-   * Thumbnail generation procedures
-   */
   thumbnail: router({
     generate: protectedProcedure
       .input(z.object({ videoTitle: z.string() }))
-      .mutation(async ({ input }) => {
-        // Simulate AI processing
-        await simulateAIProcessing(1500);
-        
+      .mutation(async ({ ctx, input }) => {
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
         // Generate mock thumbnails
         const variants = generateMockThumbnails(input.videoTitle);
-        
+
         // Convert SVG to data URLs for display
         return variants.map((v) => ({
           id: v.id,
@@ -188,6 +151,38 @@ export const appRouter = router({
           style: v.style,
           downloadUrl: svgToDataUrl(v.svgContent),
         }));
+      }),
+  }),
+
+  /**
+   * Thumbnail feedback procedures
+   */
+  feedback: router({
+    create: protectedProcedure
+      .input(z.object({ assetId: z.string().min(1), rating: z.number().min(1).max(5), comment: z.string().optional(), helpful: z.boolean().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await createThumbnailFeedback(input.assetId, ctx.user.id, input.rating, input.comment, input.helpful);
+        } catch (error: any) {
+          if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+            throw new Error('Asset not found. Please ensure the thumbnail has been saved before providing feedback.');
+          }
+          throw error;
+        }
+      }),
+
+    getByAsset: publicProcedure
+      .input(z.object({ assetId: z.string() }))
+      .query(async ({ input }) => {
+        return await getFeedbackByAsset(input.assetId);
+      }),
+
+    getAverageRating: publicProcedure
+      .input(z.object({ assetId: z.string() }))
+      .query(async ({ input }) => {
+        const avgRating = await getAverageRatingByAsset(input.assetId);
+        const allFeedback = await getFeedbackByAsset(input.assetId);
+        return { averageRating: avgRating, totalFeedback: allFeedback.length };
       }),
   }),
 });

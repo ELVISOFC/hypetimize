@@ -83,3 +83,18 @@
 - [ ] Test subscription tier limits - OPTIONAL
 - [x] Refine Brutalist design across all pages
 - [x] Final QA and bug fixes
+
+## Phase 11: Thumbnail Feedback System
+- [x] Add feedback table to database schema
+- [x] Create database migration for feedback table
+- [x] Implement feedback backend procedures (create, list, get)
+- [x] Build feedback UI component with rating and comments
+- [x] Wire feedback into VideoDetail page
+- [x] Add vitest tests for feedback system
+
+## Phase 12: SEO Copy/Export Feature
+- [x] Add copy buttons to individual SEO elements (titles, tags, chapters)
+- [x] Add "Copy All" buttons for bulk copying
+- [x] Add "Export All" button to copy entire SEO dataset
+- [x] Toast notifications for copy feedback
+- [x] Clickable tags for individual copying

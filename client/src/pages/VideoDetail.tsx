@@ -2,10 +2,11 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link, useLocation, useRoute } from "wouter";
-import { ArrowLeft, Download, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, Loader2, RefreshCw, Copy, Share2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ThumbnailFeedback } from "@/components/ThumbnailFeedback";
 
 export default function VideoDetail() {
   const { isAuthenticated } = useAuth();
@@ -43,6 +44,38 @@ export default function VideoDetail() {
   const handleSelectThumbnail = (thumbnailId: string) => {
     setSelectedThumbnail(thumbnailId);
     toast.success("Thumbnail selected!");
+  };
+
+  const seoData = {
+    titles: [
+      { title: "How to Master YouTube SEO in 2026", style: "Curiosity Gap", ctr: "High" },
+      { title: "YouTube SEO Tips That Actually Work", style: "How-To", ctr: "Medium" },
+      { title: "The Ultimate YouTube Optimization Guide", style: "Authority", ctr: "High" },
+    ],
+    description: "Learn the latest YouTube SEO strategies to boost your channel visibility and reach. This comprehensive guide covers keyword research, metadata optimization, thumbnail design, and more.",
+    broadTags: ["YouTube", "SEO", "Marketing"],
+    mediumTags: ["YouTube Optimization", "Channel Growth", "Video SEO"],
+    longTailTags: ["How to rank YouTube videos", "YouTube algorithm explained", "Creator monetization"],
+    chapters: [
+      { time: "0:00", title: "Introduction" },
+      { time: "2:15", title: "Keyword Research" },
+      { time: "5:30", title: "Metadata Optimization" },
+      { time: "8:45", title: "Thumbnail Design" },
+    ],
+  };
+
+  const handleCopyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard!`);
+  };
+
+  const handleExportSEO = () => {
+    const allTags = [...seoData.broadTags, ...seoData.mediumTags, ...seoData.longTailTags];
+    const chaptersText = seoData.chapters.map(c => `${c.time} ${c.title}`).join("\n");
+    
+    const exportText = `TITLE VARIANTS:\n${seoData.titles.map(t => `- ${t.title} (${t.style}, CTR: ${t.ctr})`).join("\n")}\n\nDESCRIPTION:\n${seoData.description}\n\nTAGS:\n${allTags.join(", ")}\n\nCHAPTERS:\n${chaptersText}`;
+    
+    handleCopyToClipboard(exportText, "SEO data");
   };
 
   const handleDownloadThumbnail = (downloadUrl: string, title: string) => {
@@ -129,39 +162,60 @@ export default function VideoDetail() {
               <h2 className="text-3xl font-bold mb-6">SEO Metadata</h2>
 
               <div className="mb-8">
-                <h3 className="text-xl font-bold mb-4">Title Variants</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold">Title Variants</h3>
+                  <Button onClick={() => handleCopyToClipboard(seoData.titles.map(t => t.title).join("\n"), "Titles")} className="bg-red-600 hover:bg-red-700 text-sm">
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy All
+                  </Button>
+                </div>
                 <div className="space-y-4">
-                  {[
-                    { title: "How to Master YouTube SEO in 2026", style: "Curiosity Gap", ctr: "High" },
-                    { title: "YouTube SEO Tips That Actually Work", style: "How-To", ctr: "Medium" },
-                    { title: "The Ultimate YouTube Optimization Guide", style: "Authority", ctr: "High" },
-                  ].map((variant, i) => (
+                  {seoData.titles.map((variant, i) => (
                     <Card key={i} className="bg-gray-900 border border-gray-800 p-4">
-                      <p className="font-bold">{variant.title}</p>
-                      <p className="text-gray-400 text-sm">
-                        Style: {variant.style} | CTR: {variant.ctr}
-                      </p>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-bold">{variant.title}</p>
+                          <p className="text-gray-400 text-sm">
+                            Style: {variant.style} | CTR: {variant.ctr}
+                          </p>
+                        </div>
+                        <Button onClick={() => handleCopyToClipboard(variant.title, "Title")} className="bg-gray-800 hover:bg-gray-700 ml-2" size="sm">
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </Card>
                   ))}
                 </div>
               </div>
 
               <div className="mb-8">
-                <h3 className="text-xl font-bold mb-4">Optimized Description</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold">Optimized Description</h3>
+                  <Button onClick={() => handleCopyToClipboard(seoData.description, "Description")} className="bg-red-600 hover:bg-red-700 text-sm">
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy
+                  </Button>
+                </div>
                 <Card className="bg-gray-900 border border-gray-800 p-4">
                   <p className="text-gray-300">
-                    Learn the latest YouTube SEO strategies to boost your channel visibility and reach. This comprehensive guide covers keyword research, metadata optimization, thumbnail design, and more.
+                    {seoData.description}
                   </p>
                 </Card>
               </div>
 
               <div className="mb-8">
-                <h3 className="text-xl font-bold mb-4">Tags</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold">Tags</h3>
+                  <Button onClick={() => handleCopyToClipboard([...seoData.broadTags, ...seoData.mediumTags, ...seoData.longTailTags].join(", "), "Tags")} className="bg-red-600 hover:bg-red-700 text-sm">
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy All
+                  </Button>
+                </div>
                 <div>
                   <p className="text-gray-400 text-sm mb-2">Broad Tags</p>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {["YouTube", "SEO", "Marketing"].map((tag, i) => (
-                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm">
+                    {seoData.broadTags.map((tag, i) => (
+                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm cursor-pointer hover:bg-gray-700" onClick={() => handleCopyToClipboard(tag, "Tag")}>
                         {tag}
                       </span>
                     ))}
@@ -169,8 +223,8 @@ export default function VideoDetail() {
 
                   <p className="text-gray-400 text-sm mb-2">Medium Tags</p>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {["YouTube Optimization", "Channel Growth", "Video SEO"].map((tag, i) => (
-                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm">
+                    {seoData.mediumTags.map((tag, i) => (
+                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm cursor-pointer hover:bg-gray-700" onClick={() => handleCopyToClipboard(tag, "Tag")}>
                         {tag}
                       </span>
                     ))}
@@ -178,8 +232,8 @@ export default function VideoDetail() {
 
                   <p className="text-gray-400 text-sm mb-2">Long-Tail Tags</p>
                   <div className="flex flex-wrap gap-2">
-                    {["How to rank YouTube videos", "YouTube algorithm explained", "Creator monetization"].map((tag, i) => (
-                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm">
+                    {seoData.longTailTags.map((tag, i) => (
+                      <span key={i} className="bg-gray-800 px-3 py-1 text-sm cursor-pointer hover:bg-gray-700" onClick={() => handleCopyToClipboard(tag, "Tag")}>
                         {tag}
                       </span>
                     ))}
@@ -188,16 +242,22 @@ export default function VideoDetail() {
               </div>
 
               <div>
-                <h3 className="text-xl font-bold mb-4">Chapter Markers</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold">Chapter Markers</h3>
+                  <Button onClick={() => handleCopyToClipboard(seoData.chapters.map(c => `${c.time} ${c.title}`).join("\n"), "Chapters")} className="bg-red-600 hover:bg-red-700 text-sm">
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy All
+                  </Button>
+                </div>
                 <div className="space-y-2">
-                  {[
-                    { time: "0:00", title: "Introduction" },
-                    { time: "2:15", title: "Keyword Research" },
-                    { time: "5:30", title: "Metadata Optimization" },
-                    { time: "8:45", title: "Thumbnail Design" },
-                  ].map((chapter, i) => (
+                  {seoData.chapters.map((chapter, i) => (
                     <Card key={i} className="bg-gray-900 border border-gray-800 p-4">
-                      <p className="font-bold">{chapter.time} - {chapter.title}</p>
+                      <div className="flex justify-between items-center">
+                        <p className="font-bold">{chapter.time} - {chapter.title}</p>
+                        <Button onClick={() => handleCopyToClipboard(`${chapter.time} ${chapter.title}`, "Chapter")} className="bg-gray-800 hover:bg-gray-700" size="sm">
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </Card>
                   ))}
                 </div>
@@ -294,6 +354,16 @@ export default function VideoDetail() {
             )}
           </div>
 
+          {/* Feedback Section */}
+          {selectedThumbnail && (
+            <ThumbnailFeedback
+              assetId={selectedThumbnail}
+              onFeedbackSubmitted={() => {
+                // Optionally refresh feedback stats
+              }}
+            />
+          )}
+
           <div className="divider-red mb-12"></div>
 
           {/* Actions */}
@@ -302,7 +372,10 @@ export default function VideoDetail() {
               <RefreshCw className="w-4 h-4 mr-2" />
               Regenerate All
             </Button>
-            <Button className="bg-red-600 hover:bg-red-700">Copy Results</Button>
+            <Button onClick={handleExportSEO} className="bg-red-600 hover:bg-red-700">
+              <Share2 className="w-4 h-4 mr-2" />
+              Export All
+            </Button>
           </div>
         </div>
       </div>
