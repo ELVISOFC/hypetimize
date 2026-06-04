@@ -112,3 +112,11 @@
 - [x] Wire both pages into onboarding flow
 - [x] Add progress indicators and success states
 - [x] Add skip/continue buttons for flexible onboarding
+
+
+## Phase 15: Real AI Thumbnail Generation Integration
+- [x] Replace mock thumbnail service with real AI image generation
+- [x] Update backend procedures to call Manus image generation API
+- [x] Wire frontend to use real generated image URLs
+- [x] Add tests for AI thumbnail generation
+- [ ] Fix existing onboarding test failures (pre-existing issue)

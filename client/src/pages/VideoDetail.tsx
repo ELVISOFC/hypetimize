@@ -278,7 +278,7 @@ export default function VideoDetail() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">Thumbnail Variants</h2>
               <Button
-                onClick={() => generateThumbnails.mutate({ videoTitle: video.title })}
+                onClick={() => generateThumbnails.mutate({ videoTitle: video.title, videoDescription: video.description })}
                 disabled={isGenerating || generateThumbnails.isPending}
                 className="bg-red-600 hover:bg-red-700"
               >

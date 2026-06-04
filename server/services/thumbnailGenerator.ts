@@ -1,144 +1,139 @@
 /**
- * Mock AI Thumbnail Generation Service
- * Generates realistic YouTube thumbnail previews using SVG
+ * AI Thumbnail Generation Service
+ * Generates YouTube thumbnails using Manus AI image generation API
  */
+
+import { generateImage } from "../_core/imageGeneration";
 
 export interface ThumbnailVariant {
   id: string;
   title: string;
   style: string;
-  svgContent: string;
-  downloadUrl?: string;
+  url: string; // Real image URL from AI service
+  prompt: string; // The prompt used to generate this thumbnail
 }
 
 /**
- * Generate mock thumbnail variants with different styles
- * Each variant represents a different AI-generated design approach
+ * Generate AI-powered thumbnail variants with different styles
+ * Each variant uses a specific prompt to create a unique design
  */
-export function generateMockThumbnails(videoTitle: string): ThumbnailVariant[] {
+export async function generateAIThumbnails(
+  videoTitle: string,
+  videoDescription?: string
+): Promise<ThumbnailVariant[]> {
   const variants: ThumbnailVariant[] = [];
 
-  // Variant 1: Bold Text with Red Accent
-  variants.push({
-    id: "thumb-1",
-    title: "Bold Headline",
-    style: "High contrast with bold red accent",
-    svgContent: createThumbnailSVG(
-      videoTitle,
-      "#FF0000",
-      "#FFFFFF",
-      "#000000",
-      "Bold"
-    ),
-  });
+  // Prepare context for better AI generation
+  const titleSnippet = videoTitle.substring(0, 50);
+  const descriptionSnippet = videoDescription?.substring(0, 100) || "";
+
+  // Variant 1: Bold Headline Style
+  const boldPrompt = `Create a YouTube thumbnail with bold, eye-catching design. 
+    Large white text reading "${titleSnippet}" on a stark black background. 
+    Add a bright red accent bar or element. 
+    Make it high-contrast and attention-grabbing. 
+    YouTube standard 1280x720px. Professional quality.`;
+
+  try {
+    const boldResult = await generateImage({ prompt: boldPrompt });
+    if (boldResult.url) {
+      variants.push({
+        id: "thumb-bold",
+        title: "Bold Headline",
+        style: "High contrast with bold red accent",
+        url: boldResult.url,
+        prompt: boldPrompt,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to generate bold thumbnail:", error);
+  }
 
   // Variant 2: Curiosity Gap Style
-  variants.push({
-    id: "thumb-2",
-    title: "Curiosity Gap",
-    style: "Question format with yellow highlight",
-    svgContent: createThumbnailSVG(
-      `${videoTitle}?`,
-      "#FFD700",
-      "#FFFFFF",
-      "#000000",
-      "Curiosity"
-    ),
-  });
+  const curiosityPrompt = `Create a YouTube thumbnail with curiosity gap design.
+    Large question mark with "${titleSnippet}?" in bold white text.
+    Use yellow or gold highlights on black background.
+    Include a subtle arrow or pointing element.
+    YouTube standard 1280x720px. Professional quality.`;
+
+  try {
+    const curiosityResult = await generateImage({ prompt: curiosityPrompt });
+    if (curiosityResult.url) {
+      variants.push({
+        id: "thumb-curiosity",
+        title: "Curiosity Gap",
+        style: "Question format with yellow highlight",
+        url: curiosityResult.url,
+        prompt: curiosityPrompt,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to generate curiosity thumbnail:", error);
+  }
 
   // Variant 3: Minimalist Clean
-  variants.push({
-    id: "thumb-3",
-    title: "Minimalist",
-    style: "Clean white text on dark background",
-    svgContent: createThumbnailSVG(
-      videoTitle,
-      "#1A1A1A",
-      "#FFFFFF",
-      "#333333",
-      "Minimal"
-    ),
-  });
+  const minimalistPrompt = `Create a clean, minimalist YouTube thumbnail.
+    Simple white text reading "${titleSnippet}" centered on black background.
+    Add subtle geometric shapes or lines in gray.
+    Focus on readability and elegance.
+    YouTube standard 1280x720px. Professional quality.`;
+
+  try {
+    const minimalistResult = await generateImage({ prompt: minimalistPrompt });
+    if (minimalistResult.url) {
+      variants.push({
+        id: "thumb-minimal",
+        title: "Minimalist",
+        style: "Clean white text on dark background",
+        url: minimalistResult.url,
+        prompt: minimalistPrompt,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to generate minimalist thumbnail:", error);
+  }
+
+  // If all AI generation fails, return empty array (frontend will handle gracefully)
+  if (variants.length === 0) {
+    console.warn("No thumbnails were successfully generated");
+  }
 
   return variants;
 }
 
 /**
- * Create an SVG thumbnail with the given parameters
- * YouTube standard: 1280x720px
+ * Generate a single custom thumbnail based on user specifications
  */
-function createThumbnailSVG(
-  text: string,
-  accentColor: string,
-  textColor: string,
-  bgColor: string,
-  _style: string
-): string {
-  const width = 1280;
-  const height = 720;
+export async function generateCustomThumbnail(
+  customPrompt: string
+): Promise<{ url: string; prompt: string } | null> {
+  try {
+    const result = await generateImage({
+      prompt: `Create a professional YouTube thumbnail based on this description:
+        ${customPrompt}
+        
+        Requirements:
+        - YouTube standard 1280x720px
+        - High contrast and eye-catching
+        - Professional quality
+        - Suitable for YouTube platform`,
+    });
 
-  // Truncate text if too long
-  const displayText = text.length > 40 ? text.substring(0, 37) + "..." : text;
+    if (result.url) {
+      return {
+        url: result.url,
+        prompt: customPrompt,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to generate custom thumbnail:", error);
+  }
 
-  return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-    <!-- Background -->
-    <rect width="${width}" height="${height}" fill="${bgColor}"/>
-    
-    <!-- Accent bar -->
-    <rect width="${width}" height="120" y="${height - 120}" fill="${accentColor}" opacity="0.9"/>
-    
-    <!-- Text shadow for depth -->
-    <text
-      x="${width / 2}"
-      y="${height / 2 + 40}"
-      font-size="96"
-      font-weight="bold"
-      font-family="Arial, sans-serif"
-      text-anchor="middle"
-      fill="#000000"
-      opacity="0.2"
-    >
-      ${escapeXml(displayText)}
-    </text>
-    
-    <!-- Main text -->
-    <text
-      x="${width / 2}"
-      y="${height / 2 + 20}"
-      font-size="96"
-      font-weight="bold"
-      font-family="Arial, sans-serif"
-      text-anchor="middle"
-      fill="${textColor}"
-    >
-      ${escapeXml(displayText)}
-    </text>
-    
-    <!-- Bottom accent text -->
-    <text
-      x="${width / 2}"
-      y="${height - 40}"
-      font-size="48"
-      font-weight="bold"
-      font-family="Arial, sans-serif"
-      text-anchor="middle"
-      fill="${bgColor}"
-    >
-      ▶ WATCH NOW
-    </text>
-  </svg>`;
+  return null;
 }
 
 /**
- * Convert SVG to a data URL for display
- */
-export function svgToDataUrl(svgContent: string): string {
-  const encoded = encodeURIComponent(svgContent);
-  return `data:image/svg+xml,${encoded}`;
-}
-
-/**
- * Escape XML special characters
+ * Escape XML special characters for SVG content
  */
 function escapeXml(unsafe: string): string {
   return unsafe
@@ -147,11 +142,4 @@ function escapeXml(unsafe: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
-}
-
-/**
- * Simulate AI processing delay
- */
-export async function simulateAIProcessing(delayMs: number = 2000): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, delayMs));
 }

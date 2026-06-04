@@ -3,7 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { generateMockThumbnails, svgToDataUrl } from "./services/thumbnailGenerator";
+import { generateAIThumbnails, generateCustomThumbnail } from "./services/thumbnailGenerator";
 import { getDb, createThumbnailFeedback, getFeedbackByAsset, getAverageRatingByAsset } from "./db";
 
 export const appRouter = router({
@@ -136,21 +136,45 @@ export const appRouter = router({
 
   thumbnail: router({
     generate: protectedProcedure
-      .input(z.object({ videoTitle: z.string() }))
+      .input(z.object({ videoTitle: z.string(), videoDescription: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        // Simulate processing delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+          // Generate AI-powered thumbnails
+          const variants = await generateAIThumbnails(input.videoTitle, input.videoDescription);
 
-        // Generate mock thumbnails
-        const variants = generateMockThumbnails(input.videoTitle);
+          // Return generated thumbnails with real URLs
+          return variants.map((v) => ({
+            id: v.id,
+            title: v.title,
+            style: v.style,
+            downloadUrl: v.url, // Real image URL from AI service
+            prompt: v.prompt,
+          }));
+        } catch (error) {
+          console.error("Thumbnail generation failed:", error);
+          throw new Error("Failed to generate thumbnails. Please try again.");
+        }
+      }),
 
-        // Convert SVG to data URLs for display
-        return variants.map((v) => ({
-          id: v.id,
-          title: v.title,
-          style: v.style,
-          downloadUrl: svgToDataUrl(v.svgContent),
-        }));
+    generateCustom: protectedProcedure
+      .input(z.object({ prompt: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const result = await generateCustomThumbnail(input.prompt);
+          if (!result) {
+            throw new Error("Failed to generate custom thumbnail");
+          }
+          return {
+            id: "custom-thumbnail",
+            title: "Custom",
+            style: "User-specified design",
+            downloadUrl: result.url,
+            prompt: result.prompt,
+          };
+        } catch (error) {
+          console.error("Custom thumbnail generation failed:", error);
+          throw new Error("Failed to generate custom thumbnail. Please try again.");
+        }
       }),
   }),
 
