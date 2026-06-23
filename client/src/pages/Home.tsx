@@ -37,11 +37,72 @@ export default function Home() {
           <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto">
             Generate stunning thumbnails, optimize SEO metadata, and extract highlight clips—all powered by AI. Built for creators who demand excellence.
           </p>
-          <a href={getLoginUrl()}>
-            <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-6 text-lg">
-              Get Started Free
-            </Button>
-          </a>
+          {isAuthenticated ? (
+            <Link href="/dashboard">
+              <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-6 text-lg">
+                Go to Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <a href={getLoginUrl()}>
+              <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-6 text-lg">
+                Get Started Free
+              </Button>
+            </a>
+          )}
+        </div>
+      </section>
+
+      {/* Red Divider */}
+      <div className="divider-red"></div>
+
+      {/* Trust Section with Videos */}
+      <section className="brutalist-section">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-center mb-4">Trusted by Creators</h2>
+          <p className="text-center text-gray-400 mb-16 max-w-2xl mx-auto">See how HYPETIMIZE transforms creator workflows and boosts channel performance.</p>
+          
+          <div className="grid md:grid-cols-5 gap-4 mb-12">
+            {/* Video Placeholder 1 */}
+            <div className="bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center rounded-none">
+              <div className="text-center">
+                <Play className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">Video 1</p>
+              </div>
+            </div>
+            
+            {/* Video Placeholder 2 */}
+            <div className="bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center rounded-none">
+              <div className="text-center">
+                <Play className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">Video 2</p>
+              </div>
+            </div>
+            
+            {/* Video Placeholder 3 */}
+            <div className="bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center rounded-none">
+              <div className="text-center">
+                <Play className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">Video 3</p>
+              </div>
+            </div>
+            
+            {/* Video Placeholder 4 */}
+            <div className="bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center rounded-none">
+              <div className="text-center">
+                <Play className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">Video 4</p>
+              </div>
+            </div>
+            
+            {/* Video Placeholder 5 */}
+            <div className="bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center rounded-none">
+              <div className="text-center">
+                <Play className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">Video 5</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

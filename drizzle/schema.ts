@@ -242,3 +242,20 @@ export const notifications = mysqlTable("notifications", {
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+/**
+ * ThumbnailFeedback: User ratings and comments on generated thumbnails
+ */
+export const thumbnailFeedback = mysqlTable("thumbnailFeedback", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  assetId: varchar("assetId", { length: 64 }).notNull().references(() => assets.id, { onDelete: "cascade" }),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  rating: int("rating").notNull(), // 1-5 stars
+  comment: text("comment"),
+  helpful: boolean("helpful"), // Did this help improve results?
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ThumbnailFeedback = typeof thumbnailFeedback.$inferSelect;
+export type InsertThumbnailFeedback = typeof thumbnailFeedback.$inferInsert;
